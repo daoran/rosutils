@@ -53,7 +53,7 @@ rosutils
       the timestamp in the message (i.e. delayed), this is common on high rate
       sensors such as an IMU where writing to bag in bursts is preferred.
 
-      This script creates a restamped bag where the time writte to the rosbag
+      This script creates a restamped bag where the time written to the rosbag
       is equal to the message timestamp itself.
 
     show_depth.py
