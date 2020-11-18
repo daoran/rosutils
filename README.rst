@@ -3,6 +3,8 @@ rosutils
 
 `rosutils` contains a bunch of python utility scripts:
 
+.. code::
+
     addtime2topic.py
 
       Usage: addtime2topic.py <ros bag> <topic>
