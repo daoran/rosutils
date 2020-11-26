@@ -42,6 +42,14 @@ rosutils
     Converts the rosbag topic to video.
 
 
+  heartbeat.py
+
+    Usage: heartbeat.py <rate in hz>
+    Example: heartbeat.py 1
+
+    Simple heartbeat ROS node. Useful to make sure the robot is still operating.
+
+
   restamp_bag.py
 
     Usage: restamp_bag.py <input_file>
@@ -60,10 +68,14 @@ rosutils
     This script creates a restamped bag where the time written to the rosbag is
     equal to the message timestamp itself.
 
+
   show_depth.py
+
     Script for visualizing depth sensor data.
 
+
   show_image.py
+
     Script for visualizing RGB sensor data.
 
 
