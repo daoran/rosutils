@@ -3,9 +3,12 @@ import sys
 from math import atan2
 from math import asin
 from math import degrees
+from cStringIO import StringIO
 
 import rosbag
 import rospy
+
+import numpy as np
 
 
 def print_usage():
@@ -89,7 +92,7 @@ class geometry_msgs:
 
     @staticmethod
     def quaternion_to_str(msg):
-        header = "qw,qx,qy,qz,roll,pitch,yaw"
+        header = "qw,qx,qy,qz,roll[deg],pitch[deg],yaw[deg]"
         rpy = quat2euler([msg.w, msg.x, msg.y, msg.z])
         data = ",".join([str(msg.w), str(msg.x), str(msg.y), str(msg.z),
                          str(degrees(rpy[0])), str(degrees(rpy[1])), str(degrees(rpy[2]))])
@@ -216,10 +219,71 @@ class sensor_msgs:
     @staticmethod
     def imu_to_str(msg):
         msg_header, msg_data = std_msgs.header_to_str(msg.header)
+        rot_header, quat = geometry_msgs.quaternion_to_str(msg.orientation)
         _, gyr = geometry_msgs.vector3_to_str(msg.angular_velocity)
         _, acc = geometry_msgs.vector3_to_str(msg.linear_acceleration)
+        header = msg_header + "," + rot_header + "," + "wx,wy,wz,ax,ay,az"
+        data = msg_data + "," + quat + "," + gyr + "," + acc
+        return (header, data)
+
+class mavros_msgs:
+    supported_msgs = [
+        "mavros_msgs/AttitudeTarget"
+    ]
+
+    @staticmethod
+    def attitude_target_to_str(msg):
+        msg_header, msg_data = std_msgs.header_to_str(msg.header)
         header = msg_header + ",wx,wy,wz,ax,ay,az"
-        data = msg_data + "," + gyr + "," + acc
+
+        rot_header, quat = geometry_msgs.quaternion_to_str(msg.orientation)
+        _, vec = geometry_msgs.vector3_to_str(msg.body_rate)
+        body_rate_header = "body_rate_x,body_rate_y,body_rate_z"
+
+        header = msg_header + "," + rot_header + "," + body_rate_header + "," + "thrust"
+        data = msg_data + "," + quat + "," + vec + "," + str(msg.thrust)
+        return (header, data)
+
+class aabm_comms:
+    supported_msgs = [
+        "aabm_comms/Trajectory"
+    ]
+
+    @staticmethod
+    def traj_to_str(msg):
+        waypoints = msg.trajectory
+
+        time = []
+        pos = []
+        vel = []
+        acc = []
+        yaw = []
+
+        ts = msg.header.stamp.secs + msg.header.stamp.nsecs * 1e-9
+        for wp in msg.trajectory:
+            pos.append([wp.position.x, wp.position.y, wp.position.z])
+            vel.append([wp.linearVelocity.x, wp.linearVelocity.y, wp.linearVelocity.z])
+            acc.append([wp.linearAcceleration.x, wp.linearAcceleration.y, wp.linearAcceleration.z])
+            yaw.append(wp.yaw)
+            time.append(ts + wp.timeMilliseconds * 1e-3)
+
+        header = "timestamp[s]"
+        header += ",pos_x[m],pos_y[m],pos_z[m]"
+        header += ",vel_x[m],vel_y[m],vel_z[m]"
+        header += ",acc_x[m],acc_y[m],acc_z[m]"
+        header += ",yaw[rad]"
+
+        time = np.array(time).reshape(len(time), 1)
+        pos = np.array(pos)
+        vel = np.array(vel)
+        acc = np.array(acc)
+        yaw = np.array(yaw).reshape(len(yaw), 1)
+        df = np.block([time, pos, vel, acc, yaw])
+
+        str_io = StringIO()
+        np.savetxt(str_io, df, fmt='%.9f', delimiter=',')
+        data = str_io.getvalue()
+
         return (header, data)
 
 
@@ -236,6 +300,8 @@ def check_topic_type(bag, topic):
     supported_msgs += geometry_msgs.supported_msgs
     supported_msgs += nav_msgs.supported_msgs
     supported_msgs += sensor_msgs.supported_msgs
+    supported_msgs += mavros_msgs.supported_msgs
+    supported_msgs += aabm_comms.supported_msgs
 
     if msg_type not in supported_msgs:
         supported_list = ""
@@ -245,6 +311,8 @@ def check_topic_type(bag, topic):
         err_msg = "bag2csv does not support msg type: [%s]\n" % msg_type
         err_msg += "bag2csv currently only supports:\n%s" % supported_list
         raise RuntimeError(err_msg)
+
+    return msg_type
 
 
 def get_msg_converter(bag, topic):
@@ -279,6 +347,14 @@ def get_msg_converter(bag, topic):
     if msg_type == "sensor_msgs/Imu":
         return sensor_msgs.imu_to_str
 
+    # MAVROS MSGS
+    if msg_type == "mavros_msgs/AttitudeTarget":
+        return mavros_msgs.attitude_target_to_str
+
+    # AABM MSGS
+    if msg_type == "aabm_comms/Trajectory":
+        return aabm_comms.traj_to_str
+
 
 if __name__ == "__main__":
     # Check CLI args
@@ -294,7 +370,7 @@ if __name__ == "__main__":
 
     # Checks
     check_topic_exists(bag, topic)
-    check_topic_type(bag, topic)
+    msg_type = check_topic_type(bag, topic)
     msg_converter = get_msg_converter(bag, topic)
 
     # Output csv file
@@ -307,6 +383,10 @@ if __name__ == "__main__":
     header, data = msg_converter(msg)
     csv_file.write("#" + header + "\n")
     csv_file.write(data + "\n")
+    # -- Special messages
+    if msg_type == "aabm_comms/Trajectory":
+        print("Done!")
+        exit(0)
     # -- Output data
     for topic, msg, t in bag.read_messages(topics=[topic]):
         _, data = msg_converter(msg)
