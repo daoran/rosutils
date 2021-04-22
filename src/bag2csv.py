@@ -65,6 +65,7 @@ class std_msgs:
 class geometry_msgs:
     supported_msgs = [
         "geometry_msgs/Point",
+        "geometry_msgs/PointStamped",
         "geometry_msgs/Vector3",
         "geometry_msgs/Quaternion",
         "geometry_msgs/Pose",
@@ -81,6 +82,15 @@ class geometry_msgs:
         axis = ["x", "y", "z"]
         header = ",".join([prefix + ax for ax in axis])
         data = ",".join([str(msg.x), str(msg.y), str(msg.z)])
+        return (header, data)
+
+    @staticmethod
+    def point_stamped_to_str(msg, prefix=""):
+        msg_header, header_data = std_msgs.header_to_str(msg.header)
+        point_header, point_data = geometry_msgs.point_to_str(msg.point)
+
+        header = msg_header + "," + point_header
+        data = header_data + "," + point_data
         return (header, data)
 
     @staticmethod
@@ -326,6 +336,8 @@ def get_msg_converter(bag, topic):
     # GEOMETRY MSGS
     if msg_type == "geometry_msgs/Point":
         return geometry_msgs.point_to_str
+    if msg_type == "geometry_msgs/PointStamped":
+        return geometry_msgs.point_stamped_to_str
     if msg_type == "geometry_msgs/Vector3":
         return geometry_msgs.vector3_to_str
     if msg_type == "geometry_msgs/Quaternion":
