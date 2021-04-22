@@ -34,22 +34,27 @@
 
 BAG=~/Downloads/HoverTest21042021_WithBaha.bag
 
-python src/bag2csv.py \
-  $BAG \
-  /AABM_01/mavros/local_position/odom \
-  odom.csv
+# python src/bag2csv.py \
+#   $BAG \
+#   /AABM_01/mavros/local_position/odom \
+#   odom.csv
 
 # python src/bag2csv.py \
 #   $BAG \
 #   /AABM_01/autopilot/TrajectoryReference \
 #   traj.csv
 
-python src/bag2csv.py \
-  $BAG \
-  /AABM_01/autopilot/PositionReference \
-  pos_ref.csv
+# python src/bag2csv.py \
+#   $BAG \
+#   /AABM_01/autopilot/PositionReference \
+#   pos_ref.csv
 
-python3 scripts/plot_tracking.py
+# python src/bag2csv.py \
+#   $BAG \
+#   /AABM_01/mavros/battery \
+#   battery.csv
+
+python scripts/aabm_debug.py $BAG
 
 
 # python src/bag2imgs.py \

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 from math import atan2
 from math import asin
@@ -335,7 +335,9 @@ class aabm_comms:
 def check_topic_exists(bag, topic):
     info = bag.get_type_and_topic_info()
     if topic not in info.topics:
-        raise RuntimeError("Opps! topic not in bag!")
+        print("Opps! topic [%s] not in bag!" % topic)
+        return False
+    return True
 
 
 def check_topic_type(bag, topic):
@@ -405,17 +407,16 @@ def get_msg_converter(bag, topic):
         return aabm_comms.traj_to_str
 
 
-def bag2csv(bag_path, topic, output_path):
+def convert(bag, topic, output_path):
     # Checks
-    bag = rosbag.Bag(bag_path, 'r')
-    check_topic_exists(bag, topic)
+    if check_topic_exists(bag, topic) is False:
+        return False
+
     msg_type = check_topic_type(bag, topic)
     msg_converter = get_msg_converter(bag, topic)
 
     # Output csv file
-    print("Processing rosbag: [%s]" % (bag_path))
-    print("Extracting rostopic: [%s]" % (topic))
-    print("Saving to: [%s]" % (output_path))
+    print("Extracting rostopic: [%s] to [%s]" % (topic, output_path))
     # -- Output header
     csv_file = open(output_path, "w")
     topic, msg, t = next(bag.read_messages(topics=[topic]))
@@ -433,6 +434,8 @@ def bag2csv(bag_path, topic, output_path):
         csv_file.flush()
     csv_file.close()
 
+    return True
+
 
 if __name__ == "__main__":
     # Check CLI args
@@ -444,5 +447,8 @@ if __name__ == "__main__":
     bag_path = sys.argv[1]
     topic = sys.argv[2]
     output_path = sys.argv[3]
-    bag2csv(bag_path, topic, output_path)
+
+    print("Processing rosbag: [%s]" % (bag_path))
+    bag = rosbag.Bag(bag_path, 'r')
+    convert(bag, topic, output_path)
     print("Done!")
