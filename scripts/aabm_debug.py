@@ -411,14 +411,15 @@ if __name__ == "__main__":
     traj_ref_topic = "/AABM_01/autopilot/TrajectoryReference"
     pos_ref_topic = "/AABM_01/autopilot/PositionReference"
 
-    if check_topic_exists(bag, traj_ref_topic):
-        ref_data_type = "traj_ref"
-        convert(bag, traj_ref_topic, ref_file)
-    else:
-        ref_data_type = "pos_ref"
-        convert(bag, pos_ref_topic, ref_file)
+    # if check_topic_exists(bag, traj_ref_topic):
+    #     ref_data_type = "traj_ref"
+    #     convert(bag, traj_ref_topic, ref_file)
+    # else:
+    ref_data_type = "pos_ref"
+    convert(bag, pos_ref_topic, ref_file)
 
     # Load data
+    print("Loading data...")
     batt_data = load_battery_state(batt_file)
     imu_data = load_imu_data(imu_file)
     target_att_data = load_attitude_data(target_att_file)
@@ -426,9 +427,9 @@ if __name__ == "__main__":
     ref_data = load_ref_data(ref_data_type, ref_file)
 
     # Process data
+    print("Processing data...")
     datasets = [batt_data, imu_data, target_att_data, odom_data, ref_data]
     [batt_data, imu_data, target_att_data, odom_data, ref_data] = form_relative_time(datasets)
-
 
     # Plot
     plot_imu(imu_data)

@@ -32,7 +32,7 @@
 #   convert_bag $BAG_PATH
 # done
 
-BAG=~/Downloads/HoverTest21042021_WithBaha.bag
+BAG=~/Downloads/MPCcircleTest_TrajQxQy7.5_3.5__7.0_0.5_GoodFlight.bag
 
 # python src/bag2csv.py \
 #   $BAG \
