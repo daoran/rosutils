@@ -35,10 +35,7 @@ def quat2euler(q):
 
 
 class std_msgs:
-    supported_msgs = [
-        "std_msgs/Header"
-        "std_msgs/String"
-    ]
+    supported_msgs = ["std_msgs/Header" "std_msgs/String"]
 
     @staticmethod
     def header_to_str(msg):
@@ -62,16 +59,13 @@ class std_msgs:
         header = field_name
         return (header, data)
 
+
 class geometry_msgs:
     supported_msgs = [
-        "geometry_msgs/Point",
-        "geometry_msgs/PointStamped",
-        "geometry_msgs/Vector3",
-        "geometry_msgs/Quaternion",
-        "geometry_msgs/Pose",
-        "geometry_msgs/PoseStamped",
-        "geometry_msgs/PoseWithCovarianceStamped",
-        "geometry_msgs/Twist",
+        "geometry_msgs/Point", "geometry_msgs/PointStamped",
+        "geometry_msgs/Vector3", "geometry_msgs/Quaternion",
+        "geometry_msgs/Pose", "geometry_msgs/PoseStamped",
+        "geometry_msgs/PoseWithCovarianceStamped", "geometry_msgs/Twist",
         "geometry_msgs/TwistStamped",
         "geometry_msgs/TwistWithCovarianceStamped",
         "geometry_msgs/TransformStamped"
@@ -104,8 +98,15 @@ class geometry_msgs:
     def quaternion_to_str(msg):
         header = "qw,qx,qy,qz,roll[deg],pitch[deg],yaw[deg]"
         rpy = quat2euler([msg.w, msg.x, msg.y, msg.z])
-        data = ",".join([str(msg.w), str(msg.x), str(msg.y), str(msg.z),
-                         str(degrees(rpy[0])), str(degrees(rpy[1])), str(degrees(rpy[2]))])
+        data = ",".join([
+            str(msg.w),
+            str(msg.x),
+            str(msg.y),
+            str(msg.z),
+            str(degrees(rpy[0])),
+            str(degrees(rpy[1])),
+            str(degrees(rpy[2]))
+        ])
         return (header, data)
 
     @staticmethod
@@ -135,7 +136,8 @@ class geometry_msgs:
     @staticmethod
     def pose_with_covariance_to_str(msg):
         pose_header, pose_data = geometry_msgs.pose_to_str(msg.pose)
-        covar_header, covar_data = geometry_msgs.covariance_to_str(msg.covariance, "pose_")
+        covar_header, covar_data = geometry_msgs.covariance_to_str(
+            msg.covariance, "pose_")
 
         header = pose_header + "," + covar_header
         data = pose_data + "," + covar_data
@@ -153,7 +155,8 @@ class geometry_msgs:
     @staticmethod
     def pose_with_covariance_stamped_to_str(msg):
         msg_header, header_data = std_msgs.header_to_str(msg.header)
-        pose_header, pose_data = geometry_msgs.pose_with_covariance_to_str(msg.pose, "pose_")
+        pose_header, pose_data = geometry_msgs.pose_with_covariance_to_str(
+            msg.pose, "pose_")
 
         header = msg_header + "," + pose_header
         data = header_data + "," + pose_data
@@ -161,8 +164,10 @@ class geometry_msgs:
 
     @staticmethod
     def twist_to_str(msg):
-        linear_header, linear_data = geometry_msgs.vector3_to_str(msg.linear, "a")
-        angular_header, angular_data = geometry_msgs.vector3_to_str(msg.angular, "w")
+        linear_header, linear_data = geometry_msgs.vector3_to_str(
+            msg.linear, "a")
+        angular_header, angular_data = geometry_msgs.vector3_to_str(
+            msg.angular, "w")
 
         header = linear_header + "," + angular_header
         data = linear_data + "," + angular_data
@@ -171,7 +176,8 @@ class geometry_msgs:
     @staticmethod
     def twist_with_covariance_to_str(msg):
         twist_header, twist_data = geometry_msgs.twist_to_str(msg.twist)
-        covar_header, covar_data = geometry_msgs.covariance_to_str(msg.covariance, "twist_")
+        covar_header, covar_data = geometry_msgs.covariance_to_str(
+            msg.covariance, "twist_")
 
         header = twist_header + "," + covar_header
         data = twist_data + "," + covar_data
@@ -190,7 +196,8 @@ class geometry_msgs:
     def twist_with_covariance_stamped_to_str(msg):
         msg_header, header_data = std_msgs.header_to_str(msg.header)
         twist_header, twist_data = geometry_msgs.twist_to_str(msg.twist)
-        covar_header, covar_data = geometry_msgs.covariance_to_str(msg.covariance, "twist_")
+        covar_header, covar_data = geometry_msgs.covariance_to_str(
+            msg.covariance, "twist_")
 
         header = msg_header + "," + twist_header + "," + covar_header
         data = msg_data + "," + twist_data + "," + covar_data
@@ -205,6 +212,7 @@ class geometry_msgs:
         data = header_data + "," + tf_data
         return (header, data)
 
+
 class nav_msgs:
     supported_msgs = [
         "nav_msgs/Odometry",
@@ -213,19 +221,20 @@ class nav_msgs:
     @staticmethod
     def odometry_to_str(msg):
         msg_header, msg_data = std_msgs.header_to_str(msg.header)
-        _, str_data = std_msgs.string_to_str("child_frame_id", msg.child_frame_id)
-        pose_header, pose_data = geometry_msgs.pose_with_covariance_to_str(msg.pose)
-        twist_header, twist_data = geometry_msgs.twist_with_covariance_to_str(msg.twist)
+        _, str_data = std_msgs.string_to_str("child_frame_id",
+                                             msg.child_frame_id)
+        pose_header, pose_data = geometry_msgs.pose_with_covariance_to_str(
+            msg.pose)
+        twist_header, twist_data = geometry_msgs.twist_with_covariance_to_str(
+            msg.twist)
 
         header = msg_header + "," + "child_frame_id" + "," + pose_header + "," + twist_header
         data = msg_data + "," + str_data + "," + pose_data + "," + twist_data
         return (header, data)
 
+
 class sensor_msgs:
-    supported_msgs = [
-        "sensor_msgs/Imu",
-        "sensor_msgs/BatteryState"
-    ]
+    supported_msgs = ["sensor_msgs/Imu", "sensor_msgs/BatteryState"]
 
     @staticmethod
     def imu_to_str(msg):
@@ -271,10 +280,9 @@ class sensor_msgs:
 
         return (header, data)
 
+
 class mavros_msgs:
-    supported_msgs = [
-        "mavros_msgs/AttitudeTarget"
-    ]
+    supported_msgs = ["mavros_msgs/AttitudeTarget"]
 
     @staticmethod
     def attitude_target_to_str(msg):
@@ -289,10 +297,9 @@ class mavros_msgs:
         data = msg_data + "," + quat + "," + vec + "," + str(msg.thrust)
         return (header, data)
 
+
 class aabm_comms:
-    supported_msgs = [
-        "aabm_comms/Trajectory"
-    ]
+    supported_msgs = ["aabm_comms/Trajectory"]
 
     @staticmethod
     def traj_to_str(msg):
@@ -307,8 +314,13 @@ class aabm_comms:
         ts = msg.header.stamp.secs + msg.header.stamp.nsecs * 1e-9
         for wp in msg.trajectory:
             pos.append([wp.position.x, wp.position.y, wp.position.z])
-            vel.append([wp.linearVelocity.x, wp.linearVelocity.y, wp.linearVelocity.z])
-            acc.append([wp.linearAcceleration.x, wp.linearAcceleration.y, wp.linearAcceleration.z])
+            vel.append([
+                wp.linearVelocity.x, wp.linearVelocity.y, wp.linearVelocity.z
+            ])
+            acc.append([
+                wp.linearAcceleration.x, wp.linearAcceleration.y,
+                wp.linearAcceleration.z
+            ])
             yaw.append(wp.yaw)
             time.append(ts + wp.timeMilliseconds * 1e-3)
 
